@@ -1,5 +1,5 @@
 
-# Temple8
+# OdinBase
 
 This FastAPI template provides a ready-to-use Docker Compose setup for a modern, scalable web application. It includes a FastAPI app, Celery workers, and a **gRPC** service, with **Postgres** as the database and **RabbitMQ** as the broker for Celery tasks. The application uses **Gunicorn** with Uvicorn workers to serve FastAPI, ensuring efficient handling of requests.
 
