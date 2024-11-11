@@ -1,0 +1,50 @@
+services:
+  app:
+    restart: unless-stopped
+    env_file:
+      - .env
+    build:
+      context: ./
+      dockerfile: ./dockerfiles/python313/Dockerfile
+      labels:
+        - app
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        alembic upgrade head &&
+        gunicorn app.main:app --workers 2 \
+        --worker-class uvicorn.workers.UvicornWorker -b 0.0.0.0:5001
+    ports:
+      - "5001:5001"
+  bakery:
+    restart: unless-stopped
+    build:
+      context: ./bakery_grpc
+      dockerfile: ./Dockerfile
+      labels:
+        - bakery
+  worker:
+    restart: unless-stopped
+    labels:
+      - worker
+    env_file:
+      - .env
+    build:
+      context: ./
+      dockerfile: ./dockerfiles/python313/Dockerfile
+      labels:
+        - celery
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        celery -A app.core.celery.celery worker --loglevel=debug
+  postgres:
+    image: postgres:15.4
+    environment:
+        - POSTGRES_USER=${POSTGRES_USER:?error}
+        - POSTGRES_PASSWORD=${POSTGRES_PASS:?error}
+        - POSTGRES_DB=${POSTGRES_DB_NAME:?error}
+  broker:
+    image: rabbitmq:4.0.3-alpine
